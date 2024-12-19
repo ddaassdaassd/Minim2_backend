@@ -2,6 +2,7 @@ package edu.upc.dsa.services;
 import edu.upc.dsa.*;
 import edu.upc.dsa.exceptions.*;
 import edu.upc.dsa.models.ChangePassword;
+import edu.upc.dsa.models.FAQ;
 import edu.upc.dsa.models.Item;
 import edu.upc.dsa.models.User;
 import edu.upc.dsa.orm.FactorySession;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 @Api(value = "/usersLocal", description = "Endpoint to Users Service")
@@ -510,6 +512,45 @@ public class UserService {
         catch (Exception ex)
         {
             return Response.status(502).build();
+        }
+    }
+    // Ruta para el ejercicio de FAQs del minimo 2
+    @GET
+    @ApiOperation(value = "Get FAQs", notes = "Retrieve a list of Frequently Asked Questions")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "FAQs Retrieved Successfully"),
+            @ApiResponse(code = 500, message = "Internal Server Error"),
+            @ApiResponse(code = 506, message = "User Not Logged In Yet"),
+    })
+    @Path("/GetFAQs")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFAQs(@CookieParam("authToken") String authToken) {
+        try {
+            // Verificar si el usuario está autenticado
+            User user = this.sesm.getSession(authToken);
+
+            // Crear una lista ficticia de preguntas frecuentes
+            List<FAQ> faqs = new ArrayList<>();
+            faqs.add(new FAQ(
+                    "2024-12-19",
+                    "¿Cómo puedo pasar la pantalla X?",
+                    "Debes coger la llave que está detrás del cofre.",
+                    "Sistema de Soporte"
+            ));
+            faqs.add(new FAQ(
+                    "2024-12-18",
+                    "¿Dónde encuentro el objeto Y?",
+                    "El objeto Y se encuentra en el nivel 2 dentro del armario.",
+                    "Equipo de Desarrollo"
+            ));
+            // Retornar la lista de FAQs como respuesta JSON
+            return Response.status(200).entity(faqs).build();
+        } catch (UserNotLoggedInException ex) {
+            logger.warn("Attention, user not logged in yet");
+            return Response.status(506).build();
+        } catch (Exception ex) {
+            logger.error("An error occurred while retrieving FAQs", ex);
+            return Response.status(500).build();
         }
     }
 
