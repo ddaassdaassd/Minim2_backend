@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página RobaCobres</title>
+
+    <!-- Bootstrap CSS desde CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #C2763C;
+        }
+
+        .btn-custom {
+            background-color: black;
+            color: white;
+            border: none;
+        }
+
+        .btn-custom:hover {
+            background-color: #333;
+        }
+
+        .error-message {
+            color: red;
+        }
+
+        .success-message {
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="bg-dark text-white text-center py-3">
+        <h1>Roba Cobres</h1>
+    </header>
+    <section class="container mt-4">
+
+        <script>
+            // URL base del backend
+            //const urlBase = "http://localhost:8080/RobaCobres/users";
+            const urlBase = "http://147.83.7.204/RobaCobres/users";
+
+            // Función para validar el formulario
+            function validarFormulario(event) {
+                event.preventDefault(); // Evitar envío predeterminado del formulario
+                const nombre = document.getElementById('nombre').value;
+                const contraseña = document.getElementById('contraseña').value;
+
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = '';
+
+                if (!nombre || !contraseña) {
+                    errorMessage.textContent = 'Por favor, completa todos los campos.';
+                    return false;
+                }
+                return true;
+            }
+
+            // Función para iniciar sesión
+            async function iniciarSesion(event) {
+                if (validarFormulario(event)) {
+                    const nombre = document.getElementById('nombre').value;
+                    const contraseña = document.getElementById('contraseña').value;
+
+                    try {
+                        const response = await fetch(`${urlBase}/login`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name: nombre, password: contraseña })
+                        });
+
+                        if (response.ok) {
+                            const user = await response.json();
+                            console.log("Inicio de sesión exitoso:", user);
+                            localStorage.setItem('username', nombre);
+                            window.location.href = 'Menu.html';
+                        } else {
+                            document.getElementById('error-message').textContent = "Usuario o contraseña incorrectos.";
+                        }
+                    } catch (error) {
+                        console.error("Error al iniciar sesión:", error);
+                    }
+                }
+            }
+
+            // Función para registrarse
+            async function registrarse(event) {
+                event.preventDefault(); // Evitar envío predeterminado del formulario
+                const nombre = document.getElementById('nombreRegistro').value;
+                const correo = document.getElementById('correoRegistro').value;  // Nuevo campo de correo
+                const contraseña = document.getElementById('contraseñaRegistro').value;
+                const repetirContraseña = document.getElementById('repetirContraseña').value;
+
+                const mensajeError = document.getElementById('error-message2');
+                const mensajeExito = document.getElementById('success-message');
+
+                // Limpiar mensajes previos
+                mensajeError.textContent = '';
+                mensajeExito.textContent = '';
+
+                // Validar que las contraseñas coincidan
+                if (contraseña !== repetirContraseña) {
+                    mensajeError.textContent = 'Las contraseñas no coinciden.';
+                    return;
+                }
+
+                // Validar que el correo no esté vacío
+                if (!correo) {
+                    mensajeError.textContent = 'Por favor, introduce tu correo.';
+                    return;
+                }
+
+                try {
+                    // Intentar registrar al usuario
+                    const registerResponse = await fetch(`${urlBase}/register`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name: nombre, password: contraseña, correo: correo }) // Incluye el correo
+                    });
+
+                    if (registerResponse.status === 501) { // Si el usuario ya existe
+                        mensajeError.textContent = 'El nombre de usuario ya está registrado. Por favor, elige otro nombre.';
+                    } else if (registerResponse.ok) {
+                        mensajeExito.textContent = 'Registro exitoso.';
+                    } else {
+                        mensajeError.textContent = 'Error en el registro. Verifica los datos.';
+                    }
+                } catch (error) {
+                    console.error("Error al registrarse:", error);
+                    mensajeError.textContent = 'Error en el sistema. Inténtalo más tarde.';
+                }
+            }
+        </script>
+
+        <!-- Formulario para Iniciar Sesión -->
+        <form onsubmit="iniciarSesion(event);">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Escribe tu nombre"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <label for="contraseña" class="form-label">Contraseña:</label>
+                <input type="password" class="form-control" id="contraseña" name="contraseña"
+                    placeholder="Escribe tu contraseña" required>
+            </div>
+
+            <div id="error-message" class="error-message"></div>
+
+            <button type="submit" class="btn btn-custom">Iniciar sesión</button>
+        </form>
+
+        <hr>
+
+        <!-- Formulario para Registrarse -->
+        <form onsubmit="registrarse(event);">
+            <div class="mb-3">
+                <label for="nombreRegistro" class="form-label">Nombre:</label>
+                <input type="text" class="form-control" id="nombreRegistro" name="nombreRegistro"
+                    placeholder="Escribe tu nombre" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="correoRegistro" class="form-label">Correo:</label>
+                <input type="email" class="form-control" id="correoRegistro" name="correoRegistro"
+                    placeholder="Escribe tu correo" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="contraseñaRegistro" class="form-label">Contraseña:</label>
+                <input type="password" class="form-control" id="contraseñaRegistro" name="contraseñaRegistro"
+                    placeholder="Escribe tu contraseña" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="repetirContraseña" class="form-label">Repetir Contraseña:</label>
+                <input type="password" class="form-control" id="repetirContraseña" name="repetirContraseña"
+                    placeholder="Repite tu contraseña" required>
+            </div>
+
+            <div id="error-message2" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+
+            <button type="submit" class="btn btn-custom">Registrarse</button>
+        </form>
+    </section>
+
+    <!-- Bootstrap JS y Popper desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
